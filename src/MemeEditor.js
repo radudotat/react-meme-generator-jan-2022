@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const styleInputs = css`
   display: block;
@@ -17,30 +17,38 @@ const styleImg = css`
   margin: 0.25em;
 `;
 
-const api = 'https://api.memegen.link/images/preview.jpg';
-
 /* const preloadedImageUrls = new Set(); */
 
 export default function MemeEditor() {
+  const api = 'https://api.memegen.link/images/preview.jpg';
+
   const [textTop, setTextTop] = useState('');
   const [textBottom, setTextBottom] = useState('');
   const [textTemplate, setTextTemplate] = useState('joker');
-  let template = textTemplate;
+  const [imagePreview, setImagePreview] = useState(api);
 
-  const [imagePreview, setImagePreview] = useState(
-    'https://api.memegen.link/images/preview.jpg',
-  );
+  let template = textTemplate;
 
   function preloadImage(url) {
     let resUrl = {};
 
-    void fetch(url)
+    fetch(url)
       .then((response) => {
         resUrl = response.url;
         setImagePreview(resUrl);
       })
-      .then((data) => console.log('data', data));
+      .then((data) => console.log('data', data))
+      .catch(() => {});
   }
+
+  useEffect(
+    () => {
+      const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
+      preloadImage(urlParams);
+    },
+    // Call the function every time the imagePreview changes
+    [imagePreview, template, textBottom, textTop],
+  );
 
   return (
     <form
@@ -53,7 +61,8 @@ export default function MemeEditor() {
         <input
           css={styleInputs}
           onChange={(e) => {
-            setTextTop(e.target.value);
+            const currentValue = e.target.value;
+            setTextTop(currentValue);
           }}
         />
       </label>
@@ -68,7 +77,8 @@ export default function MemeEditor() {
         <input
           css={styleInputs}
           onChange={(e) => {
-            setTextBottom(e.target.value);
+            const currentValue = e.target.value;
+            setTextBottom(currentValue);
           }}
         />
       </label>
@@ -76,38 +86,37 @@ export default function MemeEditor() {
         Meme template
         <input
           css={styleInputs}
-          /* onChange={(e) => {
-            setTextTemplate(e.target.value);
-          }} */
+          onChange={(e) => {
+            const currentValue = e.target.value;
+            setTextTemplate(currentValue);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              template = e.target.value;
-              console.log('Pressed Enter > ', template);
-
-              const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
-
-              preloadImage(urlParams);
+              e.preventDefault();
+              e.stopPropagation();
+              const currentValue = e.target.value;
+              console.log('Pressed Enter > ', currentValue);
+              setTextTemplate(currentValue);
             }
           }}
         />
       </label>
       <button
-        onClick={() => {
-          setTextTemplate('joker');
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           template = textTemplate;
-          const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
-
-          preloadImage(urlParams);
-        }}
-      >
-        Preview
-      </button>
-      <button
-        onClick={() => {
-          template = textTemplate;
-          const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
-
-          preloadImage(urlParams);
+          const downloadUrl = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
+          fetch(downloadUrl)
+            .then((response) => {
+              /* console.log(response, response.blob()); */
+              const json = JSON.stringify(response);
+              const blob = new Blob([json], { type: 'octet/stream' });
+              const url = window.URL.createObjectURL(blob);
+              window.location.assign(url);
+            })
+            .then((data) => console.log('data', data))
+            .catch(() => {});
         }}
       >
         Download
