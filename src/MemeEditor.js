@@ -43,8 +43,17 @@ export default function MemeEditor() {
 
   useEffect(
     () => {
-      const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
-      preloadImage(urlParams);
+      // Use a timeout - otherwise the loop will run instantly
+      // and you will be left with the last value
+      const timeout = setTimeout(
+        () => {
+          const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
+          preloadImage(urlParams);
+        },
+        // Two second timeout
+        2000,
+      );
+      return () => clearTimeout(timeout);
     },
     // Call the function every time the imagePreview changes
     [imagePreview, template, textBottom, textTop],
