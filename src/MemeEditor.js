@@ -50,8 +50,8 @@ export default function MemeEditor() {
           const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
           preloadImage(urlParams);
         },
-        // Two second timeout
-        2000,
+        // 500ms timeout
+        500,
       );
       return () => clearTimeout(timeout);
     },
@@ -116,16 +116,18 @@ export default function MemeEditor() {
           e.stopPropagation();
           template = textTemplate;
           const downloadUrl = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
-          fetch(downloadUrl)
-            .then((response) => {
-              /* console.log(response, response.blob()); */
-              const json = JSON.stringify(response);
-              const blob = new Blob([json], { type: 'octet/stream' });
+          void fetch(downloadUrl)
+            .then((response) => response.blob())
+            .then((blob) => {
+              /* console.log(blob); */
               const url = window.URL.createObjectURL(blob);
-              window.location.assign(url);
-            })
-            .then((data) => console.log('data', data))
-            .catch(() => {});
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'meme-generator.jpg';
+              document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+              a.click();
+              a.remove(); // afterwards we remove the element again
+            });
         }}
       >
         Download
