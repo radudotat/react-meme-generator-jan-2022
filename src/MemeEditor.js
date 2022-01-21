@@ -20,16 +20,17 @@ const styleImg = css`
 /* const preloadedImageUrls = new Set(); */
 
 export default function MemeEditor() {
-  const api = 'https://api.memegen.link/images/preview.jpg';
+  const api = 'https://api.memegen.link/images';
 
   const [textTop, setTextTop] = useState('');
   const [textBottom, setTextBottom] = useState('');
   const [textTemplate, setTextTemplate] = useState('joker');
   const [imagePreview, setImagePreview] = useState(api);
 
-  let template = textTemplate;
+  /* let template = textTemplate; */
 
   function preloadImage(url) {
+    console.log('preloadImage', url);
     let resUrl = {};
 
     fetch(url)
@@ -47,7 +48,8 @@ export default function MemeEditor() {
       // and you will be left with the last value
       const timeout = setTimeout(
         () => {
-          const urlParams = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
+          console.log('textTemplate', textTemplate);
+          const urlParams = `${api}/${textTemplate}/${textTop}/${textBottom}?height=600&width=600`;
           preloadImage(urlParams);
         },
         // 500ms timeout
@@ -56,7 +58,7 @@ export default function MemeEditor() {
       return () => clearTimeout(timeout);
     },
     // Call the function every time the imagePreview changes
-    [imagePreview, template, textBottom, textTop],
+    [imagePreview, textTemplate, textBottom, textTop],
   );
 
   return (
@@ -102,7 +104,6 @@ export default function MemeEditor() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
-              e.stopPropagation();
               const currentValue = e.target.value;
               console.log('Pressed Enter > ', currentValue);
               setTextTemplate(currentValue);
@@ -113,20 +114,22 @@ export default function MemeEditor() {
       <button
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();
-          template = textTemplate;
-          const downloadUrl = `${api}?template=${template}&lines[]=${textTop}&lines[]=${textBottom}`;
-          void fetch(downloadUrl)
+          /* template = textTemplate; */
+          const downloadUrl = `${api}/${textTemplate}/${textTop}/${textBottom}?height=600&width=600`;
+          fetch(downloadUrl)
             .then((response) => response.blob())
             .then((blob) => {
               /* console.log(blob); */
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = 'meme-generator.jpg';
+              a.download = 'meme-generator.png';
               document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
               a.click();
               a.remove(); // afterwards we remove the element again
+            })
+            .catch((err) => {
+              console.error(err);
             });
         }}
       >
