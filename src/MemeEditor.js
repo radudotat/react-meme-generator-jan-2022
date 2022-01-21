@@ -17,20 +17,25 @@ const styleImg = css`
   margin: 0.25em;
 `;
 
-/* const preloadedImageUrls = new Set(); */
+function formatUrl(api, textTemplate, textTop, textBottom) {
+  return `${api}/${textTemplate}/${textTop.replaceAll(
+    ' ',
+    '_',
+  )}/${textBottom.replaceAll(' ', '_')}.png`;
+}
 
 export default function MemeEditor() {
   const api = 'https://api.memegen.link/images';
 
-  const [textTop, setTextTop] = useState('');
-  const [textBottom, setTextBottom] = useState('');
+  const [textTop, setTextTop] = useState('_');
+  const [textBottom, setTextBottom] = useState('_');
   const [textTemplate, setTextTemplate] = useState('joker');
   const [imagePreview, setImagePreview] = useState(api);
 
   /* let template = textTemplate; */
 
   function preloadImage(url) {
-    console.log('preloadImage', url);
+    /* console.log('preloadImage', url); */
     let resUrl = {};
 
     fetch(url)
@@ -48,8 +53,13 @@ export default function MemeEditor() {
       // and you will be left with the last value
       const timeout = setTimeout(
         () => {
-          console.log('textTemplate', textTemplate);
-          const urlParams = `${api}/${textTemplate}/${textTop}/${textBottom}?height=600&width=600`;
+          /* console.log('textTemplate', textTemplate); */
+          const urlParams = `${formatUrl(
+            api,
+            textTemplate,
+            textTop,
+            textBottom,
+          )}?height=600&width=600`;
           preloadImage(urlParams);
         },
         // 500ms timeout
@@ -72,6 +82,7 @@ export default function MemeEditor() {
         <input
           css={styleInputs}
           onChange={(e) => {
+            e.preventDefault();
             const currentValue = e.target.value;
             setTextTop(currentValue);
           }}
@@ -88,6 +99,7 @@ export default function MemeEditor() {
         <input
           css={styleInputs}
           onChange={(e) => {
+            e.preventDefault();
             const currentValue = e.target.value;
             setTextBottom(currentValue);
           }}
@@ -98,6 +110,7 @@ export default function MemeEditor() {
         <input
           css={styleInputs}
           onChange={(e) => {
+            e.preventDefault();
             const currentValue = e.target.value;
             setTextTemplate(currentValue);
           }}
@@ -105,7 +118,7 @@ export default function MemeEditor() {
             if (e.key === 'Enter') {
               e.preventDefault();
               const currentValue = e.target.value;
-              console.log('Pressed Enter > ', currentValue);
+              /* console.log('Pressed Enter > ', currentValue); */
               setTextTemplate(currentValue);
             }
           }}
@@ -115,7 +128,12 @@ export default function MemeEditor() {
         onClick={(e) => {
           e.preventDefault();
           /* template = textTemplate; */
-          const downloadUrl = `${api}/${textTemplate}/${textTop}/${textBottom}?height=600&width=600`;
+          const downloadUrl = `${formatUrl(
+            api,
+            textTemplate,
+            textTop,
+            textBottom,
+          )}?height=600&width=600`;
           fetch(downloadUrl)
             .then((response) => response.blob())
             .then((blob) => {
