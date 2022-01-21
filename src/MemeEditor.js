@@ -51,21 +51,21 @@ export default function MemeEditor() {
     () => {
       // Use a timeout - otherwise the loop will run instantly
       // and you will be left with the last value
-      const timeout = setTimeout(
-        () => {
-          /* console.log('textTemplate', textTemplate); */
-          const urlParams = `${formatUrl(
-            api,
-            textTemplate,
-            textTop,
-            textBottom,
-          )}?height=600&width=600`;
-          preloadImage(urlParams);
-        },
+      /* const timeout = setTimeout(
+        () => { */
+      /* console.log('textTemplate', textTemplate); */
+      const urlParams = `${formatUrl(
+        api,
+        textTemplate,
+        textTop,
+        textBottom,
+      )}?height=600&width=600`;
+      preloadImage(urlParams);
+      /* },
         // 500ms timeout
-        500,
+        5,
       );
-      return () => clearTimeout(timeout);
+      return () => clearTimeout(timeout); */
     },
     // Call the function every time the imagePreview changes
     [imagePreview, textTemplate, textBottom, textTop],
